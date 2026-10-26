@@ -7,11 +7,16 @@ export default function Header() {
       <Link href="/home" className="app-bar-title">
         The Groupchat
       </Link>
-      <form action="/auth/signout" method="post">
-        <button className="btn small on-brand" type="submit">
-          Sign out
-        </button>
-      </form>
+      <div className="app-bar-actions">
+        <Link href="/settings" className="btn small on-brand">
+          Me
+        </Link>
+        <form action="/auth/signout" method="post">
+          <button className="btn small on-brand" type="submit">
+            Sign out
+          </button>
+        </form>
+      </div>
     </header>
   );
 }

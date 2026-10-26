@@ -171,3 +171,50 @@ a.btn { display: inline-block; text-decoration: none; }
   .doc-head h2 { font-size: 42px; }
   .auth-title { font-size: 52px; }
 }
+
+/* ---------- Settings, Find a time ---------- */
+.app-bar-actions { display: flex; gap: 10px; align-items: center; }
+.saved-note { font-family: var(--display); font-size: 20px; color: var(--blue); transform: rotate(-4deg); }
+
+.alert {
+  background: #ffe6e4; border: var(--line); border-radius: 12px; padding: 12px 14px;
+  margin: 12px 0; font-size: 14.5px; font-weight: 600;
+}
+.alert.ok { background: var(--yellow); }
+
+details.howto {
+  background: var(--paper-raised); border: var(--line); border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 10px;
+}
+details.howto summary { cursor: pointer; font-weight: 800; }
+details.howto ol { margin: 10px 0 4px; padding-left: 20px; font-size: 14.5px; }
+details.howto li { margin-bottom: 6px; }
+
+.panel {
+  background: var(--paper-raised); border: var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px;
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.check { display: flex; gap: 8px; align-items: center; font-weight: 700; font-size: 14.5px; margin-bottom: 8px; }
+.check input { width: 18px; height: 18px; accent-color: var(--red); }
+
+.results { margin-top: 18px; }
+.option {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  border: var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; background: #e6eeff;
+}
+.option.everyone { background: var(--yellow); }
+.option-day { font-family: var(--display); font-size: 22px; letter-spacing: 0.03em; }
+.option-time { font-weight: 800; }
+.option-who { text-align: right; display: flex; flex-direction: column; }
+.option-who .sub { font-size: 13px; color: var(--ink-soft); }
+.pow {
+  font-family: var(--display); font-size: 20px; letter-spacing: 0.04em; color: #ffffff;
+  background: var(--red); border: var(--line); padding: 2px 12px; transform: rotate(-3deg);
+  clip-path: polygon(0 10%, 8% 0, 100% 6%, 94% 100%, 4% 92%);
+}
+
+@media (max-width: 600px) {
+  .field-row { grid-template-columns: 1fr; }
+  .option-who { text-align: left; }
+}

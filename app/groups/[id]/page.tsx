@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import CopyInvite from "@/components/CopyInvite";
+import FindTime from "@/components/FindTime";
 import { createClient } from "@/lib/supabase/server";
 import { leaveGroup, removeMember, deleteGroup } from "@/app/groups/actions";
 
@@ -28,6 +29,12 @@ export default async function GroupPage({ params }: { params: { id: string } }) 
         <div className="doc-head">
           <h2>{group.name}</h2>
         </div>
+
+        <section className="block">
+          <h3>Find a time</h3>
+          <p className="block-note">Checks everyone&apos;s linked calendar over the next two weeks.</p>
+          <FindTime groupId={group.id} />
+        </section>
 
         <section className="block">
           <h3>Invite friends</h3>
