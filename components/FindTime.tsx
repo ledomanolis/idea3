@@ -70,7 +70,15 @@ function formatOption(o: Option) {
   return { day, time: `${time(o.start)} – ${time(o.end)}` };
 }
 
-export default function FindTime({ groupId }: { groupId: string }) {
+export default function FindTime({
+  groupId,
+  onPick,
+  pickedStart,
+}: {
+  groupId: string;
+  onPick?: (start: number, end: number) => void;
+  pickedStart?: number | null;
+}) {
   const [windowKey, setWindowKey] = useState("evening");
   const [hours, setHours] = useState(2);
   const [weekendsOnly, setWeekendsOnly] = useState(false);
@@ -161,6 +169,15 @@ export default function FindTime({ groupId }: { groupId: string }) {
                         </b>
                         <span className="sub">Busy: {o.busy.map((m) => m.name).join(", ")}</span>
                       </>
+                    )}
+                    {onPick && (
+                      <button
+                        className={`btn small pick ${pickedStart === o.start ? "picked" : ""}`}
+                        type="button"
+                        onClick={() => onPick(o.start, o.end)}
+                      >
+                        {pickedStart === o.start ? "Picked ✓" : "Pick"}
+                      </button>
                     )}
                   </div>
                 </div>

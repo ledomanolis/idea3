@@ -33,7 +33,17 @@ const BUDGETS: [string, string][] = [
 
 const km = (n: number) => (n < 1 ? `${Math.round(n * 1000)} m` : `${n.toFixed(1)} km`);
 
-export default function FindPlace({ groupId }: { groupId: string }) {
+export type PickedVenue = { id: string; name: string; address: string; mapsUrl: string; planLabel: string };
+
+export default function FindPlace({
+  groupId,
+  onPick,
+  pickedId,
+}: {
+  groupId: string;
+  onPick?: (venue: PickedVenue) => void;
+  pickedId?: string | null;
+}) {
   const [type, setType] = useState("bar");
   const [budget, setBudget] = useState("mid");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -102,9 +112,11 @@ export default function FindPlace({ groupId }: { groupId: string }) {
           )}
 
           {venues.map((v) => (
-            <a className="venue" href={v.mapsUrl} target="_blank" rel="noreferrer" key={v.id}>
+            <div className="venue" key={v.id}>
               <div className="venue-top">
-                <span className="venue-name">{v.name}</span>
+                <a className="venue-name" href={v.mapsUrl} target="_blank" rel="noreferrer">
+                  {v.name}
+                </a>
                 <span className="venue-meta">
                   {v.rating !== null && (
                     <span className="star">
@@ -121,7 +133,24 @@ export default function FindPlace({ groupId }: { groupId: string }) {
               <div className="venue-trip">
                 About {km(v.average)} from everyone on average · furthest is {v.furthest.name} at {km(v.furthest.km)}
               </div>
-            </a>
+              {onPick && (
+                <button
+                  className={`btn small pick ${pickedId === v.id ? "picked" : ""}`}
+                  type="button"
+                  onClick={() =>
+                    onPick({
+                      id: v.id,
+                      name: v.name,
+                      address: v.address,
+                      mapsUrl: v.mapsUrl,
+                      planLabel: TYPES.find(([k]) => k === type)?.[1] || "Plan",
+                    })
+                  }
+                >
+                  {pickedId === v.id ? "Picked ✓" : "Pick"}
+                </button>
+              )}
+            </div>
           ))}
 
           {missing.length > 0 && venues.length > 0 && (
@@ -129,7 +158,7 @@ export default function FindPlace({ groupId }: { groupId: string }) {
               Not included (no home area yet): {missing.join(", ")}.
             </p>
           )}
-          {venues.length > 0 && <p className="block-note">Distances are as the crow flies. Tap a place to open it in Google Maps.</p>}
+          {venues.length > 0 && <p className="block-note">Distances are as the crow flies. Tap a place&apos;s name to open it in Google Maps.</p>}
         </div>
       )}
     </div>

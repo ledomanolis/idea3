@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import PlanCard from "@/components/PlanCard";
 import { createClient } from "@/lib/supabase/server";
+import { upcomingPlans } from "@/lib/plans";
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -11,10 +13,26 @@ export default async function HomePage() {
     .select("id, name, group_members(count)")
     .order("created_at", { ascending: false });
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const plans = await upcomingPlans(supabase);
+
   return (
     <>
       <Header />
       <div className="doc">
+        {plans.length > 0 && (
+          <section className="block">
+            <div className="doc-head">
+              <h2>Coming up</h2>
+            </div>
+            {plans.map((p) => (
+              <PlanCard key={p.id} plan={p} userId={user!.id} canCancel={p.created_by === user?.id} showGroup />
+            ))}
+          </section>
+        )}
+
         <div className="doc-head">
           <h2>Your groups</h2>
         </div>

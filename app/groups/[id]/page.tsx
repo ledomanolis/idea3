@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import CopyInvite from "@/components/CopyInvite";
-import FindTime from "@/components/FindTime";
-import FindPlace from "@/components/FindPlace";
+import PlanMaker from "@/components/PlanMaker";
+import PlanCard from "@/components/PlanCard";
 import { createClient } from "@/lib/supabase/server";
+import { upcomingPlans } from "@/lib/plans";
 import { leaveGroup, removeMember, deleteGroup } from "@/app/groups/actions";
 
 export default async function GroupPage({ params }: { params: { id: string } }) {
@@ -22,6 +23,7 @@ export default async function GroupPage({ params }: { params: { id: string } }) 
     .order("joined_at", { ascending: true });
 
   const isOwner = (members || []).some((m) => m.user_id === user?.id && m.role === "owner");
+  const plans = await upcomingPlans(supabase, params.id);
 
   return (
     <>
@@ -31,17 +33,20 @@ export default async function GroupPage({ params }: { params: { id: string } }) 
           <h2>{group.name}</h2>
         </div>
 
-        <section className="block">
-          <h3>Find a time</h3>
-          <p className="block-note">Checks everyone&apos;s linked calendar over the next two weeks.</p>
-          <FindTime groupId={group.id} />
+        <section className="block" id="plans">
+          <h3>Coming up</h3>
+          {plans.length === 0 ? (
+            <div className="empty-state">
+              No plans yet. <a href="#make-plan">Make one below!</a>
+            </div>
+          ) : (
+            plans.map((p) => (
+              <PlanCard key={p.id} plan={p} userId={user!.id} canCancel={isOwner || p.created_by === user?.id} />
+            ))
+          )}
         </section>
 
-        <section className="block">
-          <h3>Find a place</h3>
-          <p className="block-note">Ideas near the middle of everyone&apos;s home areas, fairest trip first.</p>
-          <FindPlace groupId={group.id} />
-        </section>
+        <PlanMaker groupId={group.id} />
 
         <section className="block">
           <h3>Invite friends</h3>
