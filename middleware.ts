@@ -37,12 +37,15 @@ export async function middleware(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    // Remember where they were going (e.g. an invite link) for after sign-in.
+    url.search = path === "/" ? "" : `?next=${encodeURIComponent(path)}`;
     return NextResponse.redirect(url);
   }
 
   if (user && path.startsWith("/login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

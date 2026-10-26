@@ -13,6 +13,11 @@ export default function LoginPage() {
     setStatus("sending");
     setErrorMsg("");
 
+    // Kept in a cookie rather than the email link, because Supabase only
+    // sends people back to the exact callback address it allows.
+    const next = new URLSearchParams(window.location.search).get("next");
+    document.cookie = `after_login=${encodeURIComponent(next || "")}; path=/; max-age=3600; samesite=lax`;
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -31,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <h1 className="auth-title">Idea3</h1>
+      <h1 className="auth-title">The Groupchat</h1>
       <div className="auth-card">
       <h2>Sign in</h2>
       <p>
