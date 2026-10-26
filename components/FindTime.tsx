@@ -34,7 +34,9 @@ function findOptions(members: Member[], from: number, windowKey: string, hours: 
     const dow = day.getDay();
     if (weekendsOnly && dow !== 0 && dow !== 6 && dow !== 5) continue; // Fri–Sun
 
-    const winStart = new Date(day).setHours(win.from, 0, 0, 0);
+    // The weekend starts on Friday evening: people are at work during the day.
+    const startHour = weekendsOnly && dow === 5 ? Math.max(win.from, 18) : win.from;
+    const winStart = new Date(day).setHours(startHour, 0, 0, 0);
     const winEnd = new Date(day).setHours(win.to, 0, 0, 0);
 
     let best: Option | null = null;
@@ -119,7 +121,7 @@ export default function FindTime({ groupId }: { groupId: string }) {
       </div>
       <label className="check">
         <input type="checkbox" checked={weekendsOnly} onChange={(e) => setWeekendsOnly(e.target.checked)} />
-        Weekends only (Fri–Sun)
+        Weekends only (Friday night–Sunday)
       </label>
 
       <div className="btn-row">
