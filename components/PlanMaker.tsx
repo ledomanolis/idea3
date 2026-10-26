@@ -23,7 +23,34 @@ export default function PlanMaker({ groupId }: { groupId: string }) {
   const [end, setEnd] = useState("");
   const [venueName, setVenueName] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
+
+  async function propose(formData: FormData) {
+    setSending(true);
+    setFailed(null);
+    try {
+      const result = await createPlan(formData);
+      if (result.error) {
+        setFailed(result.error);
+        return;
+      }
+    } catch (e) {
+      setFailed(e instanceof Error ? e.message : "Couldn't reach the server.");
+      return;
+    } finally {
+      setSending(false);
+    }
+    setPickedStart(null);
+    setVenue(null);
+    setTitle("");
+    setStart("");
+    setEnd("");
+    setVenueName("");
+    setNotes("");
+    document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" });
+  }
 
   function pickTime(s: number, e: number) {
     setPickedStart(s);
@@ -57,7 +84,7 @@ export default function PlanMaker({ groupId }: { groupId: string }) {
       <section className="block" id="make-plan">
         <h3>Make the plan</h3>
         <p className="block-note">Pick a time and a place above, or fill it in yourself.</p>
-        <form action={createPlan} onSubmit={() => setSubmitting(true)} className="panel plan-form">
+        <form action={propose} className="panel plan-form">
           <input type="hidden" name="groupId" value={groupId} />
           <input type="hidden" name="startsAt" value={toIso(start)} />
           <input type="hidden" name="endsAt" value={toIso(end)} />
@@ -117,8 +144,9 @@ export default function PlanMaker({ groupId }: { groupId: string }) {
               placeholder="e.g. I'll book a table for 8"
             />
           </div>
-          <button className="btn primary" type="submit" disabled={submitting}>
-            {submitting ? "Sending…" : "Propose plan!"}
+          {failed && <div className="alert">Couldn&apos;t save the plan: {failed}</div>}
+          <button className="btn primary" type="submit" disabled={sending}>
+            {sending ? "Sending…" : "Propose plan!"}
           </button>
         </form>
       </section>

@@ -6,17 +6,19 @@ import { revalidatePath } from "next/cache";
 
 const text = (formData: FormData, key: string) => String(formData.get(key) || "").trim() || null;
 
-export async function createPlan(formData: FormData) {
+// Returns an error message for PlanMaker to show, rather than throwing,
+// so the person sees what went wrong.
+export async function createPlan(formData: FormData): Promise<{ error?: string }> {
   const groupId = String(formData.get("groupId") || "");
   const title = text(formData, "title");
   const startsAt = text(formData, "startsAt");
-  if (!title || !startsAt) return;
+  if (!title || !startsAt) return { error: "The plan needs a name and a start time." };
 
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return { error: "You've been signed out. Refresh the page and sign in again." };
 
   // Made here rather than read back: see createGroup for why.
   const id = crypto.randomUUID();
@@ -30,16 +32,24 @@ export async function createPlan(formData: FormData) {
     venue_address: text(formData, "venueAddress"),
     venue_url: text(formData, "venueUrl"),
     notes: text(formData, "notes"),
-    created_by: user!.id,
+    created_by: user.id,
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("createPlan", error);
+    return { error: error.message };
+  }
 
   // Whoever suggests it is going.
-  await supabase.from("plan_responses").insert({ plan_id: id, user_id: user!.id, response: "in" });
+  const { error: replyError } = await supabase
+    .from("plan_responses")
+    .insert({ plan_id: id, user_id: user.id, response: "in" });
+  if (replyError) console.error("createPlan reply", replyError);
 
+  // No redirect: PlanMaker stays on the page, clears itself and scrolls up
+  // to the refreshed list of plans.
   revalidatePath(`/groups/${groupId}`);
   revalidatePath("/home");
-  redirect(`/groups/${groupId}#plans`);
+  return {};
 }
 
 export async function respondToPlan(formData: FormData) {

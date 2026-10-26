@@ -29,7 +29,8 @@ export async function upcomingPlans(supabase: SupabaseClient, groupId?: string):
     .order("starts_at", { ascending: true });
   if (groupId) query = query.eq("group_id", groupId);
 
-  const { data } = await query;
+  const { data, error } = await query;
+  if (error) console.error("upcomingPlans", error);
   return (data || []).map((p: any) => ({
     ...p,
     groupName: p.groups?.name,
