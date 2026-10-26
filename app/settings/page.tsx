@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import { createClient } from "@/lib/supabase/server";
-import { saveName, saveCalendar, removeCalendar } from "@/app/settings/actions";
+import { saveName, saveCalendar, removeCalendar, saveHomeArea, removeHomeArea } from "@/app/settings/actions";
 
 const ERRORS: Record<string, string> = {
   format: "That doesn't look like a calendar link. It should start with https:// or webcal://.",
@@ -17,9 +17,10 @@ export default async function SettingsPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: link }] = await Promise.all([
+  const [{ data: profile }, { data: link }, { data: home }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle(),
     supabase.from("calendar_links").select("url, updated_at").eq("user_id", user!.id).maybeSingle(),
+    supabase.from("home_areas").select("label").eq("user_id", user!.id).maybeSingle(),
   ]);
 
   return (
@@ -47,13 +48,47 @@ export default async function SettingsPage({
         </section>
 
         <section className="block">
+          <h3>Home area</h3>
+          <p className="block-note">
+            A postcode or neighbourhood, so groups can pick places that are easy for everyone to get to.
+            Friends never see it — the app only uses it to work out distances.
+          </p>
+          {searchParams.error === "maps" && (
+            <div className="alert">Google Maps isn&apos;t connected properly yet, so areas can&apos;t be looked up.</div>
+          )}
+          {searchParams.error === "area" && (
+            <div className="alert">Couldn&apos;t find that area. Try a full postcode like SW6 4LU, or a place like &quot;Clapham&quot;.</div>
+          )}
+          {home ? (
+            <div className="invite-box">
+              <code>{home.label} ✓</code>
+              {searchParams.saved === "area" && <span className="saved-note">Saved!</span>}
+              <form action={removeHomeArea}>
+                <button className="btn danger" type="submit">
+                  Change
+                </button>
+              </form>
+            </div>
+          ) : (
+            <form action={saveHomeArea}>
+              <div className="field">
+                <input name="area" type="text" required placeholder="e.g. SW6 4LU or Clapham" />
+              </div>
+              <button className="btn primary small" type="submit">
+                Save area
+              </button>
+            </form>
+          )}
+        </section>
+
+        <section className="block">
           <h3>My calendar</h3>
           <p className="block-note">
             Link your calendar so groups can find a time you&apos;re free. Your friends only ever see
             when you&apos;re busy — never what your events are.
           </p>
 
-          {searchParams.error && <div className="alert">{ERRORS[searchParams.error] || "Something went wrong."}</div>}
+          {searchParams.error && searchParams.error !== "area" && searchParams.error !== "maps" &&<div className="alert">{ERRORS[searchParams.error] || "Something went wrong."}</div>}
           {searchParams.saved === "calendar" && (
             <div className="alert ok">
               Calendar linked! Found {searchParams.events || 0} busy{" "}
