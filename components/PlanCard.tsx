@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { respondToPlan, cancelPlan } from "@/app/plans/actions";
+import BookingLinks from "@/components/BookingLinks";
+import { respondToPlan, cancelPlan, setBooking } from "@/app/plans/actions";
 import { formatPlanTime, type Plan, type PlanResponse } from "@/lib/plans";
 
 const CHOICES: [PlanResponse, string][] = [
@@ -52,6 +53,45 @@ export default function PlanCard({
           </div>
         )}
         {plan.notes && <p className="plan-notes">{plan.notes}</p>}
+
+        {plan.booked_by ? (
+          <div className="booked">
+            <span>
+              <b>Booked ✓</b> by {plan.booked_by === userId ? "you" : plan.bookerName}
+              {plan.booking_note && <span className="sub"> · {plan.booking_note}</span>}
+            </span>
+            {(plan.booked_by === userId || canCancel) && (
+              <form action={setBooking}>
+                <input type="hidden" name="planId" value={plan.id} />
+                <button className="btn danger" type="submit">
+                  Undo
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="booking">
+            <BookingLinks
+              website={plan.venue_website}
+              mapsUrl={plan.venue_url}
+              phone={plan.venue_phone}
+              reservable={plan.venue_reservable}
+            />
+            <details className="mark-booked">
+              <summary>Mark as booked</summary>
+              <form action={setBooking}>
+                <input type="hidden" name="planId" value={plan.id} />
+                <input type="hidden" name="booked" value="yes" />
+                <div className="field">
+                  <input name="note" type="text" placeholder="Optional: e.g. Table for 6 at 7pm, ref ABC123" />
+                </div>
+                <button className="btn small primary" type="submit">
+                  Booked it!
+                </button>
+              </form>
+            </details>
+          </div>
+        )}
 
         <div className="plan-who">
           <b>{going.length} going</b>

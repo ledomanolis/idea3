@@ -69,6 +69,9 @@ export type Venue = {
   ratingCount: number;
   price: string | null;
   mapsUrl: string;
+  website: string | null;
+  phone: string | null;
+  reservable: boolean;
   location: LatLng;
 };
 
@@ -83,7 +86,7 @@ export async function searchVenues(center: LatLng, type: string, budget: string)
       "Content-Type": "application/json",
       "X-Goog-Api-Key": apiKey(),
       "X-Goog-FieldMask":
-        "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.location,places.primaryTypeDisplayName,places.businessStatus",
+        "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.location,places.primaryTypeDisplayName,places.businessStatus,places.websiteUri,places.nationalPhoneNumber,places.reservable",
     },
     body: JSON.stringify({
       textQuery: plan.query,
@@ -107,6 +110,9 @@ export async function searchVenues(center: LatLng, type: string, budget: string)
       ratingCount: p.userRatingCount ?? 0,
       price: p.priceLevel ? PRICE_SYMBOLS[p.priceLevel] || null : null,
       mapsUrl: p.googleMapsUri,
+      website: p.websiteUri ?? null,
+      phone: p.nationalPhoneNumber ?? null,
+      reservable: p.reservable === true,
       location: { lat: p.location.latitude, lng: p.location.longitude },
     }));
 }

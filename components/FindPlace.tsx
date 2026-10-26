@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import BookingLinks from "@/components/BookingLinks";
 
 type Venue = {
   id: string;
@@ -12,6 +13,9 @@ type Venue = {
   ratingCount: number;
   price: string | null;
   mapsUrl: string;
+  website: string | null;
+  phone: string | null;
+  reservable: boolean;
   average: number;
   furthest: { name: string; km: number };
 };
@@ -33,7 +37,16 @@ const BUDGETS: [string, string][] = [
 
 const km = (n: number) => (n < 1 ? `${Math.round(n * 1000)} m` : `${n.toFixed(1)} km`);
 
-export type PickedVenue = { id: string; name: string; address: string; mapsUrl: string; planLabel: string };
+export type PickedVenue = {
+  id: string;
+  name: string;
+  address: string;
+  mapsUrl: string;
+  website: string | null;
+  phone: string | null;
+  reservable: boolean;
+  planLabel: string;
+};
 
 export default function FindPlace({
   groupId,
@@ -133,23 +146,29 @@ export default function FindPlace({
               <div className="venue-trip">
                 About {km(v.average)} from everyone on average · furthest is {v.furthest.name} at {km(v.furthest.km)}
               </div>
-              {onPick && (
-                <button
-                  className={`btn small pick ${pickedId === v.id ? "picked" : ""}`}
-                  type="button"
-                  onClick={() =>
-                    onPick({
-                      id: v.id,
-                      name: v.name,
-                      address: v.address,
-                      mapsUrl: v.mapsUrl,
-                      planLabel: TYPES.find(([k]) => k === type)?.[1] || "Plan",
-                    })
-                  }
-                >
-                  {pickedId === v.id ? "Picked ✓" : "Pick"}
-                </button>
-              )}
+              <div className="venue-actions">
+                <BookingLinks website={v.website} mapsUrl={v.mapsUrl} phone={v.phone} reservable={v.reservable} />
+                {onPick && (
+                  <button
+                    className={`btn small pick ${pickedId === v.id ? "picked" : ""}`}
+                    type="button"
+                    onClick={() =>
+                      onPick({
+                        id: v.id,
+                        name: v.name,
+                        address: v.address,
+                        mapsUrl: v.mapsUrl,
+                        website: v.website,
+                        phone: v.phone,
+                        reservable: v.reservable,
+                        planLabel: TYPES.find(([k]) => k === type)?.[1] || "Plan",
+                      })
+                    }
+                  >
+                    {pickedId === v.id ? "Picked ✓" : "Pick"}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
 

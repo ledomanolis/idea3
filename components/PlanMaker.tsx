@@ -91,6 +91,9 @@ export default function PlanMaker({ groupId }: { groupId: string }) {
           <input type="hidden" name="venueName" value={venueName} />
           <input type="hidden" name="venueAddress" value={linked?.address || ""} />
           <input type="hidden" name="venueUrl" value={linked?.mapsUrl || ""} />
+          <input type="hidden" name="venueWebsite" value={linked?.website || ""} />
+          <input type="hidden" name="venuePhone" value={linked?.phone || ""} />
+          <input type="hidden" name="venueReservable" value={linked?.reservable ? "yes" : ""} />
 
           <div className="field">
             <label htmlFor="plan-title">What&apos;s the plan?</label>

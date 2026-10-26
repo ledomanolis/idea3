@@ -31,6 +31,9 @@ export async function createPlan(formData: FormData): Promise<{ error?: string }
     venue_name: text(formData, "venueName"),
     venue_address: text(formData, "venueAddress"),
     venue_url: text(formData, "venueUrl"),
+    venue_website: text(formData, "venueWebsite"),
+    venue_phone: text(formData, "venuePhone"),
+    venue_reservable: formData.get("venueReservable") === "yes",
     notes: text(formData, "notes"),
     created_by: user.id,
   });
@@ -76,6 +79,23 @@ export async function cancelPlan(formData: FormData) {
   const supabase = createClient();
   const { error } = await supabase.from("plans").delete().eq("id", planId);
   if (error) throw new Error(error.message);
+
+  revalidatePath("/groups/[id]", "page");
+  revalidatePath("/home");
+}
+
+// Anyone in the group can say they've booked (via a database function,
+// since only the creator can otherwise edit a plan).
+export async function setBooking(formData: FormData) {
+  const planId = String(formData.get("planId") || "");
+  const booked = formData.get("booked") === "yes";
+  const supabase = createClient();
+  const { error } = await supabase.rpc("set_plan_booking", {
+    p_plan_id: planId,
+    p_booked: booked,
+    p_note: text(formData, "note"),
+  });
+  if (error) console.error("setBooking", error);
 
   revalidatePath("/groups/[id]", "page");
   revalidatePath("/home");

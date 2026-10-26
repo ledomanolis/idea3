@@ -11,6 +11,12 @@ export type Plan = {
   venue_name: string | null;
   venue_address: string | null;
   venue_url: string | null;
+  venue_website: string | null;
+  venue_phone: string | null;
+  venue_reservable: boolean | null;
+  booked_by: string | null;
+  booking_note: string | null;
+  bookerName: string | null;
   notes: string | null;
   created_by: string;
   groupName?: string;
@@ -24,7 +30,9 @@ export async function upcomingPlans(supabase: SupabaseClient, groupId?: string):
   const since = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
   let query = supabase
     .from("plans")
-    .select("*, groups(name), plan_responses(user_id, response, profiles(email, full_name))")
+    .select(
+      "*, groups(name), booker:profiles!plans_booked_by_fkey(email, full_name), plan_responses(user_id, response, profiles(email, full_name))"
+    )
     .gte("starts_at", since)
     .order("starts_at", { ascending: true });
   if (groupId) query = query.eq("group_id", groupId);
@@ -34,6 +42,7 @@ export async function upcomingPlans(supabase: SupabaseClient, groupId?: string):
   return (data || []).map((p: any) => ({
     ...p,
     groupName: p.groups?.name,
+    bookerName: p.booker ? p.booker.full_name || p.booker.email?.split("@")[0] || "Someone" : null,
     responses: (p.plan_responses || []).map((r: any) => ({
       user_id: r.user_id,
       response: r.response,
